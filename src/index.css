@@ -1,13 +1,87 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  /* Chart Animations */
+  @keyframes priceMove {
+    0%, 100% { 
+      transform: translateX(0px) translateY(0px); 
+      opacity: 1;
+    }
+    25% { 
+      transform: translateX(20px) translateY(-5px); 
+      opacity: 0.8;
+    }
+    50% { 
+      transform: translateX(-10px) translateY(5px); 
+      opacity: 0.9;
+    }
+    75% { 
+      transform: translateX(15px) translateY(-3px); 
+      opacity: 0.85;
+    }
+  }
+  
+  @keyframes dataPointPulse {
+    0%, 100% { 
+      transform: scale(1); 
+      opacity: 1;
+    }
+    50% { 
+      transform: scale(1.2); 
+      opacity: 0.7;
+    }
+  }
+  
+  .price-line-animation {
+    animation: priceMove 3s ease-in-out infinite;
+  }
+  
+  .data-point-animation {
+    animation: dataPointPulse 2s ease-in-out infinite;
+  }
+  
+  body {
+    @apply bg-gray-900 text-white;
+  }
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@layer components {
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-success {
+    @apply bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .input-field {
+    @apply block w-full rounded-lg border-gray-600 bg-gray-800 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500;
+  }
+  
+  .card {
+    @apply bg-gray-800 rounded-xl shadow-lg border border-gray-700;
+  }
+  
+  .card-header {
+    @apply border-b border-gray-700 p-6;
+  }
+  
+  .card-body {
+    @apply p-6;
+  }
 }
