@@ -15,7 +15,7 @@ import {
   EyeSlashIcon
 } from '@heroicons/react/24/outline';
 import ProfessionalChart from './ProfessionalChart';
-import DynamicChart from './DynamicChart';
+import LightweightChart from './LightweightChart';
 import { chartService, CandlestickData } from '../../services/chartService';
 
 interface ChartInterfaceProps {
@@ -249,7 +249,7 @@ const ChartInterface: React.FC<ChartInterfaceProps> = ({
             </div>
 
             {/* Chart Component */}
-            <DynamicChart
+            <LightweightChart
               symbol={symbol}
               data={chartData}
               timeframe={timeframe}

@@ -175,6 +175,51 @@ const TradingViewLayout: React.FC = () => {
     fetchNews(normalized.symbol);
   };
 
+  const handleSymbolChangeFromChart = async (newSymbol: string) => {
+    if (!newSymbol || newSymbol === selectedChartStock?.symbol) return;
+    
+    try {
+      // Find the stock data from watchlist or indian stocks
+      const allStocks = [...(watchlistData || []), ...(indianStockData || [])];
+      const stockData = allStocks.find(
+        (s) => sanitizeSymbol(s.symbol) === sanitizeSymbol(newSymbol)
+      );
+
+      if (stockData) {
+        const normalized = normalizeStockData(stockData);
+        setSelectedChartStock({
+          symbol: normalized.symbol,
+          name: normalized.name,
+          exchange: normalized.exchange,
+          sector: normalized.sector,
+          price: normalized.price,
+          change: normalized.change,
+          changePercent: normalized.changePercent,
+          volume: stockData.volume || undefined,
+        });
+        // Fetch new chart data for the new symbol
+        fetchChartData(normalized.symbol, chartTimeframe);
+        fetchNews(normalized.symbol);
+      } else {
+        // If not found in lists, create a basic stock object and fetch data
+        const baseSymbol = sanitizeSymbol(newSymbol);
+        setSelectedChartStock({
+          symbol: baseSymbol,
+          name: baseSymbol,
+          exchange: 'NSE',
+          sector: 'General',
+          price: 0,
+          change: 0,
+          changePercent: 0,
+        });
+        fetchChartData(baseSymbol, chartTimeframe);
+        fetchNews(baseSymbol);
+      }
+    } catch (error) {
+      console.error('Error changing symbol from chart:', error);
+    }
+  };
+
   const triggerOrder = async (side: 'buy' | 'sell') => {
     const target = selectedTradeStock || selectedChartStock;
     if (!target) return;
@@ -458,6 +503,7 @@ const TradingViewLayout: React.FC = () => {
             setTradeSide('sell');
             setShowTradeModal(true);
           }}
+          onSymbolChange={handleSymbolChangeFromChart}
         />
       )}
 

@@ -12,7 +12,7 @@ import {
   ChevronRightIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
-import DynamicChart from './DynamicChart';
+import LightweightChart from './LightweightChart';
 import { chartService, CandlestickData } from '../../services/chartService';
 
 interface EnhancedChartInterfaceProps {
@@ -290,7 +290,7 @@ const EnhancedChartInterface: React.FC<EnhancedChartInterfaceProps> = ({
                 style={{ scrollbarWidth: 'thin' }}
               >
                 <div className="min-w-full h-full">
-                  <DynamicChart
+                  <LightweightChart
                     symbol={symbol}
                     data={chartData}
                     timeframe={timeframe}

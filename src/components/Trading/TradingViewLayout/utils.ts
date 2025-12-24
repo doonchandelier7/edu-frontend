@@ -75,9 +75,84 @@ export const mapTimeframeToBackend = (timeframe: string): string => {
     '1M': '1Month',
     '3M': '1Month',
     '6M': '1Month',
+    'YTD': '1Month',
     '1Y': '1Month',
     '5Y': '1Month',
+    'All': '1Month',
   };
   return timeframeMap[timeframe] || '1Day';
+};
+
+/**
+ * Get date range for a timeframe
+ */
+export const getTimeframeDateRange = (timeframe: string): { startDate: number; endDate: number } => {
+  const now = Date.now();
+  const endDate = now;
+  let startDate: number;
+
+  switch (timeframe) {
+    case '1D':
+      startDate = now - (1 * 24 * 60 * 60 * 1000); // 1 day
+      break;
+    case '5D':
+      startDate = now - (5 * 24 * 60 * 60 * 1000); // 5 days
+      break;
+    case '1W':
+      startDate = now - (7 * 24 * 60 * 60 * 1000); // 1 week
+      break;
+    case '1M':
+      startDate = now - (30 * 24 * 60 * 60 * 1000); // 1 month (30 days)
+      break;
+    case '3M':
+      startDate = now - (90 * 24 * 60 * 60 * 1000); // 3 months (90 days)
+      break;
+    case '6M':
+      startDate = now - (180 * 24 * 60 * 60 * 1000); // 6 months (180 days)
+      break;
+    case 'YTD':
+      // Year to date - from January 1st of current year
+      const currentYear = new Date().getFullYear();
+      startDate = new Date(currentYear, 0, 1).getTime();
+      break;
+    case '1Y':
+      startDate = now - (365 * 24 * 60 * 60 * 1000); // 1 year
+      break;
+    case '5Y':
+      startDate = now - (5 * 365 * 24 * 60 * 60 * 1000); // 5 years
+      break;
+    case 'All':
+      startDate = 0; // All available data
+      break;
+    default:
+      startDate = now - (30 * 24 * 60 * 60 * 1000); // Default to 30 days
+  }
+
+  return { startDate, endDate };
+};
+
+/**
+ * Filter candlestick data by timeframe
+ */
+export const filterDataByTimeframe = (data: any[], timeframe: string): any[] => {
+  if (!data || data.length === 0) return data;
+  if (timeframe === 'All') return data;
+
+  const { startDate, endDate } = getTimeframeDateRange(timeframe);
+  
+  return data.filter(item => {
+    const timestamp = typeof item.timestamp === 'number' 
+      ? item.timestamp 
+      : new Date(item.timestamp || item.date || item.time).getTime();
+    return timestamp >= startDate && timestamp <= endDate;
+  }).sort((a, b) => {
+    const timestampA = typeof a.timestamp === 'number' 
+      ? a.timestamp 
+      : new Date(a.timestamp || a.date || a.time).getTime();
+    const timestampB = typeof b.timestamp === 'number' 
+      ? b.timestamp 
+      : new Date(b.timestamp || b.date || b.time).getTime();
+    return timestampA - timestampB;
+  });
 };
 

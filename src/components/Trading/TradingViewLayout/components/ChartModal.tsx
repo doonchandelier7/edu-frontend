@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChartBarIcon } from '@heroicons/react/24/outline';
-import DynamicChart from '../../DynamicChart';
+import LightweightChart from '../../LightweightChart';
 import { ChartStockData, NewsItem } from '../types';
 import { CandlestickData } from '../../../../services/chartService';
 import EnhancedChartInterface from '../../EnhancedChartInterface';
@@ -22,6 +22,7 @@ interface ChartModalProps {
   onPriceUpdate: (price: number, change: number, changePercent: number) => void;
   onBuyClick: () => void;
   onSellClick: () => void;
+  onSymbolChange?: (symbol: string) => void;
 }
 
 export const ChartModal: React.FC<ChartModalProps> = ({
@@ -41,7 +42,11 @@ export const ChartModal: React.FC<ChartModalProps> = ({
   onPriceUpdate,
   onBuyClick,
   onSellClick,
+  onSymbolChange,
 }) => {
+  // Hooks must be called before any early returns
+  const [showRightSidebar, setShowRightSidebar] = React.useState(false); // Hide by default for cleaner design
+
   if (showProfessionalChart) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -68,64 +73,50 @@ export const ChartModal: React.FC<ChartModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-slate-900/95 backdrop-blur-sm rounded-3xl w-full h-full max-w-[98vw] mx-2 my-2 shadow-2xl border border-slate-700/60 overflow-hidden flex flex-col">
-        <div className="p-6 border-b border-slate-700/60">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-gradient-to-br from-white to-gray-50 w-full h-full max-w-[98vw] mx-2 my-2 shadow-2xl border border-gray-300 rounded-xl overflow-hidden flex flex-col">
+        <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <span className="text-lg font-bold text-white">{stock.symbol.charAt(0)}</span>
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-xl font-bold text-white">{stock.symbol.charAt(0)}</span>
               </div>
               <div>
-                <h2 className="text-3xl font-bold text-white">{stock.symbol}</h2>
-                <p className="text-slate-400">{stock.name}</p>
-                <div className="flex items-center space-x-4 mt-2">
-                  <span className="px-3 py-1 bg-slate-700 text-slate-300 rounded-full text-sm font-medium">
-                    {stock.exchange}
-                  </span>
-                  <span className="px-3 py-1 bg-slate-700 text-slate-300 rounded-full text-sm font-medium">
-                    {stock.sector}
-                  </span>
-                  {portfolioHoldings[stock.symbol?.toUpperCase?.() || ''] > 0 && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-700/40 text-emerald-300 border border-emerald-600/40">
-                      Owned
-                    </span>
-                  )}
-                  {recentlyBought.has((stock.symbol || '').toUpperCase()) && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-700/40 text-blue-300 border border-blue-600/40">
-                      New
-                    </span>
-                  )}
-                </div>
+                <h2 className="text-2xl font-bold text-gray-900">{stock.symbol}</h2>
+                <p className="text-gray-600 text-sm font-medium">{stock.name}</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <div className="text-4xl font-bold text-white">₹{stock.price.toLocaleString()}</div>
-                <div className={`text-xl font-semibold ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {stock.change >= 0 ? '+' : ''}{stock.change} ({stock.changePercent >= 0 ? '+' : ''}
-                  {stock.changePercent}%)
+              <div className="text-right bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-200">
+                <div className="text-3xl font-bold text-gray-900 mb-1">₹{stock.price.toLocaleString()}</div>
+                <div className={`text-base font-semibold px-2 py-1 rounded-lg inline-block ${
+                  stock.change >= 0 
+                    ? 'bg-green-50 text-green-700 border border-green-200' 
+                    : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {stock.change >= 0 ? '+' : ''}{stock.change.toFixed(2)} ({stock.changePercent >= 0 ? '+' : ''}
+                  {stock.changePercent.toFixed(2)}%)
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={onBuyClick}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                  className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 transition-all font-semibold shadow-lg hover:shadow-xl"
                 >
                   Buy
                 </button>
                 <button
                   onClick={onSellClick}
-                  className="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors"
+                  className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 transition-all font-semibold shadow-lg hover:shadow-xl"
                 >
                   Sell
                 </button>
               </div>
               <button
                 onClick={onClose}
-                className="p-3 text-slate-400 hover:text-white hover:bg-slate-700 rounded-xl transition-all duration-200"
+                className="p-3 text-gray-600 hover:text-gray-900 hover:bg-white rounded-xl transition-all shadow-sm hover:shadow-md"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -133,135 +124,62 @@ export const ChartModal: React.FC<ChartModalProps> = ({
           </div>
         </div>
 
-        <div className="p-6 flex-1 min-h-0 overflow-y-auto">
-          <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/60 h-full">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white">Price Chart - {stock.symbol}</h3>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={onProfessionalChartClick}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
-                >
-                  <ChartBarIcon className="w-4 h-4" />
-                  <span>Professional Chart</span>
-                </button>
-                <div className="flex bg-slate-700 rounded-lg p-1">
+        <div className="flex-1 min-h-0 overflow-hidden bg-gradient-to-br from-gray-50 to-white">
+          {/* Main Chart Area */}
+          <div className="h-full p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900">Price Chart</h3>
+              <div className="flex items-center space-x-3">
+                <div className="flex bg-gray-100 rounded-xl p-1.5 border border-gray-200 shadow-sm">
                   {['candles', 'line', 'bars'].map((t) => (
                     <button
                       key={t}
                       onClick={() => onChartTypeChange(t as any)}
-                      className={`px-3 py-1 text-xs rounded-md ${
-                        chartType === t ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-600'
+                      className={`px-4 py-2 text-sm font-medium rounded-lg capitalize transition-all ${
+                        chartType === t 
+                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md' 
+                          : 'text-gray-700 hover:text-gray-900 hover:bg-gray-200'
                       }`}
                     >
                       {t}
                     </button>
                   ))}
                 </div>
-                {['1D', '1W', '1M', '3M', '1Y'].map((period) => (
-                  <button
-                    key={period}
-                    onClick={() => onTimeframeChange(period)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      selectedTimeframe === period
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                    }`}
-                  >
-                    {period}
-                  </button>
-                ))}
-                <button
-                  onClick={() => {
-                    const el = document.getElementById('stock-news-section');
-                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }}
-                  className="px-4 py-2 rounded-lg text-sm font-medium bg-slate-700 text-slate-300 hover:bg-slate-600"
-                >
-                  News
-                </button>
+                <div className="flex bg-gray-100 rounded-xl p-1.5 border border-gray-200 shadow-sm">
+                  {['1D', '1W', '1M', '3M', '1Y'].map((period) => (
+                    <button
+                      key={period}
+                      onClick={() => onTimeframeChange(period)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        selectedTimeframe === period
+                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
+                          : 'text-gray-700 hover:text-gray-900 hover:bg-gray-200'
+                      }`}
+                    >
+                      {period}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="h-[28rem]">
-              <DynamicChart
+            <div className="h-[calc(100vh-300px)] min-h-[500px] bg-white rounded-xl border border-gray-200 shadow-inner">
+              <LightweightChart
                 key={`${stock.symbol}-${chartTimeframe}`}
                 symbol={stock.symbol}
                 data={chartData}
                 timeframe={chartTimeframe}
                 onTimeframeChange={onTimeframeChange}
-                onSymbolChange={() => {}}
+                onSymbolChange={(newSymbol) => {
+                  if (onSymbolChange && newSymbol && newSymbol !== stock.symbol) {
+                    onSymbolChange(newSymbol);
+                  }
+                }}
                 chartType={chartType}
+                onChartTypeChange={onChartTypeChange}
                 onPriceUpdate={onPriceUpdate}
               />
             </div>
-
-            <div className="grid grid-cols-4 gap-4 mt-6">
-              <div className="bg-slate-700/50 rounded-xl p-4">
-                <p className="text-slate-400 text-sm mb-1">Open</p>
-                <p className="font-bold text-white">
-                  {chartData.length > 0
-                    ? `₹${chartData[0].open.toFixed(2)}`
-                    : stock.price > 0
-                      ? `₹${(stock.price * 0.98).toFixed(2)}`
-                      : '₹0.00'}
-                </p>
-              </div>
-              <div className="bg-slate-700/50 rounded-xl p-4">
-                <p className="text-slate-400 text-sm mb-1">High</p>
-                <p className="font-bold text-white">
-                  {chartData.length > 0
-                    ? `₹${Math.max(...chartData.map((d) => d.high)).toFixed(2)}`
-                    : stock.price > 0
-                      ? `₹${(stock.price * 1.05).toFixed(2)}`
-                      : '₹0.00'}
-                </p>
-              </div>
-              <div className="bg-slate-700/50 rounded-xl p-4">
-                <p className="text-slate-400 text-sm mb-1">Low</p>
-                <p className="font-bold text-white">
-                  {chartData.length > 0
-                    ? `₹${Math.min(...chartData.map((d) => d.low)).toFixed(2)}`
-                    : stock.price > 0
-                      ? `₹${(stock.price * 0.95).toFixed(2)}`
-                      : '₹0.00'}
-                </p>
-              </div>
-              <div className="bg-slate-700/50 rounded-xl p-4">
-                <p className="text-slate-400 text-sm mb-1">Volume</p>
-                <p className="font-bold text-white">
-                  {chartData.length > 0
-                    ? chartData.reduce((sum, d) => sum + (d.volume || 0), 0).toLocaleString()
-                    : stock.volume
-                      ? stock.volume.toLocaleString()
-                      : '0'}
-                </p>
-              </div>
-            </div>
-
-            {newsItems && newsItems.length > 0 && (
-              <div id="stock-news-section" className="mt-6 bg-slate-800/60 rounded-xl p-4">
-                <div className="text-slate-300 text-sm mb-3">Related News</div>
-                <div className="space-y-2">
-                  {newsItems.map((n: any, idx: number) => (
-                    <a
-                      key={idx}
-                      href={n.url || '#'}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="block p-3 bg-slate-800 rounded-lg hover:bg-slate-700 text-slate-200"
-                    >
-                      <div className="text-sm font-semibold">{n.title || n.headline || 'News'}</div>
-                      {n.source && (
-                        <div className="text-xs text-slate-400 mt-1">
-                          {n.source} • {n.publishedAt ? new Date(n.publishedAt).toLocaleString() : ''}
-                        </div>
-                      )}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

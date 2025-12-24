@@ -175,8 +175,10 @@ export const alpacaIndianStocksApi = {
     return response.data.data;
   },
 
-  getHistoricalData: async (symbol: string, timeframe?: string): Promise<IndianStockHistoricalData> => {
-    const params = timeframe ? { timeframe } : {};
+  getHistoricalData: async (symbol: string, timeframe?: string, originalTimeframe?: string): Promise<IndianStockHistoricalData> => {
+    const params: any = {};
+    if (timeframe) params.timeframe = timeframe;
+    if (originalTimeframe) params.originalTimeframe = originalTimeframe;
     const response = await api.get(`/trading/alpaca-indian/historical/${symbol}`, { params });
     return response.data.data;
   },
@@ -190,8 +192,20 @@ export const alpacaIndianStocksApi = {
   getNews: async (symbol: string): Promise<any[]> => {
     try {
       const response = await api.get(`/trading/alpaca-indian/news/${symbol}`);
-      return response.data.data || [];
+      return response.data?.data || response.data || [];
     } catch (e) {
+      console.warn('News API failed for', symbol, e);
+      return [];
+    }
+  },
+
+  // Events
+  getEvents: async (symbol: string): Promise<any[]> => {
+    try {
+      const response = await api.get(`/trading/alpaca-indian/events/${symbol}`);
+      return response.data?.data || response.data || [];
+    } catch (e) {
+      // Events API might not exist, return empty array
       return [];
     }
   },
